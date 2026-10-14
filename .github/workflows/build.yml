@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-26
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Self-check
+        run: swiftc Shared/X3F.swift Tests/main.swift -o "$RUNNER_TEMP/x3fcheck" && "$RUNNER_TEMP/x3fcheck"
+
+      - name: Build
+        run: |
+          # A tag such as v1.2.0 sets the app version to 1.2.0.
+          version=()
+          [[ $GITHUB_REF_TYPE == tag ]] && version=("MARKETING_VERSION=${GITHUB_REF_NAME#v}")
+          xcodebuild -quiet -project X3FPeek.xcodeproj -scheme X3FPeek -configuration Release \
+            -destination 'generic/platform=macOS' -derivedDataPath build "${version[@]}" build
+          ditto -c -k --keepParent build/Build/Products/Release/X3FPeek.app X3FPeek.zip
+
+      - name: Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" X3FPeek.zip --repo "$GITHUB_REPOSITORY" --generate-notes
