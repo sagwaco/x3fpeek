@@ -1,6 +1,6 @@
-# X3F Peek
+# X3Peek (X3F Peek)
 
-Finder thumbnails and Quick Look previews for Sigma X3F raw files. The
+Finder thumbnails and Quick Look previews for Sigma Foveon X3F raw files. The
 extensions show the full-size JPEG preview that the camera embeds in each file.
 They do not decode raw data.
 
